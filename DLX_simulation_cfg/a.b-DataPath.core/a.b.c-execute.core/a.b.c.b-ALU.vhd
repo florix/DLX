@@ -50,6 +50,7 @@ begin
     variable tmp : std_logic_vector(32 downto 0);
     begin
       ovf <= '0';
+      tmp := (others => '0');
 		case alu_op is
 			when ALUOP_SLL =>
 			 res_i <= std_logic_vector(shift_left(unsigned(a), to_integer(unsigned(b(4 downto 0)))));
