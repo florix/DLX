@@ -61,6 +61,7 @@ component reg_file is
     write_data       : in std_logic_vector(31 downto 0);  -- data to be written at the address specified in wirte_address
     reg_write        : in std_logic;
     rst              : in std_logic;
+    clk              : in std_logic;
     -- OUTPUTS
     data_reg_1       : out std_logic_vector(31 downto 0);  -- data from read port 1
     data_reg_2       : out std_logic_vector(31 downto 0)   -- data from read port 2
@@ -174,6 +175,7 @@ begin
           write_data       => data_write,
           reg_write        => reg_write,
           rst              => rst,
+          clk              => clk,
           data_reg_1       => data_read_1,
           data_reg_2       => data_read_2
           );

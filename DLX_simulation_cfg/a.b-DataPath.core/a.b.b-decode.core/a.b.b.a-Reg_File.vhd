@@ -1,9 +1,14 @@
 -------------------------------------------------------------------------
 -- Register File
--- Register File, clocked with the write signal RegWrite. There are
+-- Register File, clocked. There are
 -- two read ports, and 1 write port. Internally it has been added a
 -- forwarding logic to prevent data corruption whenever two instructions
--- are writing and reading the same register.
+-- are writing and reading the same register. The forwarding logic helps
+-- whenever WB and register fecth occurs in the same clock cycle and on the
+-- same register. Indeed the data will be passed to the output while the
+-- write will occur on the (next) clock edge.
+-- NOTE: without the internal forwarding it is impossible to access
+-- same register for read/write with clocked implementation.
 -------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
@@ -23,6 +28,7 @@ entity reg_file is
     write_data       : in std_logic_vector(31 downto 0);   -- data to be written at the address specified in wirte_address
     reg_write        : in std_logic;
     rst              : in std_logic;
+    clk              : in std_logic;
     -- OUTPUTS
     data_reg_1       : out std_logic_vector(31 downto 0);   -- data from read port 1
     data_reg_2       : out std_logic_vector(31 downto 0)    -- data from read port 2
@@ -52,13 +58,13 @@ begin
   -- on the register
   -- file
   --------------------------------------
-  write_process:process(rst, reg_write, write_address, write_data)
+  write_process:process(clk, rst, reg_write, write_address, write_data)
   begin
     if (rst = '1') then
 
       bank_register <= (others => (others => '0'));
 
-    elsif (reg_write = '1') then
+    elsif (clk'event and clk = '1' and reg_write = '1') then
 
       -- Writing register 0 is forbidded
       if ( not(to_integer(unsigned(write_address)) = 0) ) then
@@ -77,7 +83,7 @@ begin
   -- It implement read operations and
   -- the forwarding logic
   --------------------------------------
-  read_process:process(read_address_1, read_address_2, reg_write, write_data, write_address)
+  read_process:process(bank_register, read_address_1, read_address_2, reg_write, write_data, write_address)
   begin
 
     -- Forwarding logic: the forwarding should be activated if and only if
